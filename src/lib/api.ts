@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://plastech-backend.runasp.net/api',
+  // Use Vite proxy in development, full URL in production
+  baseURL: import.meta.env.PROD 
+    ? 'https://plastech-backend.runasp.net/api' 
+    : '/api',
 });
 
 api.interceptors.request.use(

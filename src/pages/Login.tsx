@@ -9,7 +9,7 @@ import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Leaf, ArrowRight, Mail, Lock } from 'lucide-react';
+import { Leaf, ArrowRight, Mail, Lock, ArrowLeft } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,9 +19,15 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Auto-redirect if already logged in
+  if (isAuthenticated) {
+    navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
+    return null;
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema)
@@ -62,8 +68,14 @@ export function Login() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-green-900/5 p-8 sm:p-12 transition-all">
-          <div className="flex flex-col items-center mb-8">
+        <div className="w-full max-w-md bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-green-900/5 p-8 sm:p-12 transition-all relative">
+          
+          <Link to="/" className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only sm:not-sr-only">Home</span>
+          </Link>
+
+          <div className="flex flex-col items-center mb-8 mt-2">
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30">
               <Leaf className="h-6 w-6 text-white" />
             </div>

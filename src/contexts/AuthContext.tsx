@@ -8,6 +8,7 @@ export interface User {
   avatarUrl?: string;
   points: number;
   role: 'User' | 'Admin';
+  googleId?: string;
   createdAt: string;
 }
 

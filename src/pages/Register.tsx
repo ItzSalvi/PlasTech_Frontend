@@ -8,7 +8,7 @@ import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Leaf, User, Mail, Lock, Sparkles } from 'lucide-react';
+import { Leaf, User, Mail, Lock, Sparkles, ArrowLeft } from 'lucide-react';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -19,9 +19,14 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  if (isAuthenticated) {
+    navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
+    return null;
+  }
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema)
@@ -49,8 +54,14 @@ export function Register() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-emerald-900/5 p-8 sm:p-12 transition-all">
-          <div className="flex flex-col items-center mb-8">
+        <div className="w-full max-w-md bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-emerald-900/5 p-8 sm:p-12 transition-all relative">
+          
+          <Link to="/" className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only sm:not-sr-only">Home</span>
+          </Link>
+
+          <div className="flex flex-col items-center mb-8 mt-2">
             <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-700 dark:from-green-500 dark:to-emerald-600 shadow-lg">
               <Leaf className="h-6 w-6 text-white" />
             </div>
