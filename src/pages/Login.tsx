@@ -1,15 +1,19 @@
 import { useState } from 'react';
+import { GlobalLoading } from '../components/ui/GlobalLoading';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { GoogleLogin } from '@react-oauth/google';
+import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Leaf, ArrowRight, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Leaf, ArrowRight, Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import PlasTechLogo from '../assets/PlasTech_Logo.png';
+import bgLanding from '../assets/bg-landing.png';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -22,11 +26,12 @@ export function Login() {
   const { login, isAuthenticated, isAdmin } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Auto-redirect if already logged in
   if (isAuthenticated) {
     navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
-    return null;
+    return <GlobalLoading />;
   }
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
@@ -60,24 +65,36 @@ export function Login() {
     }
   };
 
+  if (isLoading) {
+    return <GlobalLoading />;
+  }
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex group">
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 -z-10 bg-white dark:bg-zinc-950">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-green-200/50 dark:bg-green-900/20 blur-[100px] pointer-events-none"></div>
+    <div className="min-h-[calc(100vh-4rem)] flex group relative overflow-hidden">
+      {/* Hero-style Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img 
+          src={bgLanding} 
+          alt="Background" 
+          className="w-full h-full object-cover opacity-40 absolute inset-0" 
+          draggable={false}
+        />
+        {/* Subtle Green Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-card via-card to-green-50/30" />
+        {/* Minimalist Green Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#22c55e08_1px,transparent_1px),linear-gradient(to_bottom,#22c55e08_1px,transparent_1px)] bg-[size:64px_64px]" />
+        {/* Soft Green Orbs */}
+        <div className="absolute top-0 -right-40 w-96 h-96 bg-gradient-to-br from-green-100/40 to-emerald-100/20 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 -left-40 w-96 h-96 bg-gradient-to-tr from-green-100/30 to-emerald-100/10 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-50 dark:bg-green-900/20/20 rounded-full blur-[120px]" />
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        <div className="w-full max-w-md bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-green-900/5 p-8 sm:p-12 transition-all relative">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10 w-full">
+        <div className="w-full max-w-md bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-green-900/5 p-6 sm:p-10 transition-all relative">
           
-          <Link to="/" className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only sm:not-sr-only">Home</span>
-          </Link>
-
           <div className="flex flex-col items-center mb-8 mt-2">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30">
-              <Leaf className="h-6 w-6 text-white" />
+            <div className="mb-4 flex justify-center">
+              <img src={PlasTechLogo} alt="PlasTech Logo" className="h-12 w-auto" />
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Welcome Back</h2>
             <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-center text-sm">
@@ -94,7 +111,7 @@ export function Login() {
                   id="email" 
                   type="email" 
                   placeholder="name@example.com" 
-                  className="pl-10 h-12 rounded-xl bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-green-500 transition-all font-medium"
+                  className="pl-10 h-12 rounded-xl bg-white dark:bg-zinc-950/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-green-500 transition-all font-medium"
                   {...register('email')} 
                 />
               </div>
@@ -110,11 +127,18 @@ export function Login() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
                 <Input 
                   id="password" 
-                  type="password" 
+                  type={showPassword ? 'text' : 'password'} 
                   placeholder="••••••••"
-                  className="pl-10 h-12 rounded-xl bg-white/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-green-500 transition-all font-medium"
+                  className="pl-10 pr-10 h-12 rounded-xl bg-white dark:bg-zinc-950/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 focus-visible:ring-green-500 transition-all font-medium"
                   {...register('password')} 
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
               {errors.password && <p className="text-xs text-red-500 ml-1 font-medium">{errors.password.message}</p>}
             </div>
@@ -127,7 +151,7 @@ export function Login() {
             
             <Button 
               type="submit" 
-              className="w-full h-12 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-50 dark:hover:bg-zinc-200 text-white dark:text-black font-semibold shadow-lg transition-transform active:scale-[0.98] mt-2 group" 
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-green-600/20 transition-all active:scale-[0.98] mt-4 group cursor-pointer" 
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
@@ -140,30 +164,49 @@ export function Login() {
               <div className="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white dark:bg-zinc-950 px-4 text-zinc-500 font-medium tracking-wide">Or continue with</span>
+              <span className="bg-white dark:bg-zinc-950 px-4 text-zinc-500 dark:text-zinc-400 font-medium tracking-wide">Or continue with</span>
             </div>
           </div>
 
           <div className="flex justify-center w-full mb-6">
-            <div className="hover:scale-[1.02] transition-transform w-full flex justify-center shadow-sm rounded-xl overflow-hidden">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google Auth failed')}
-                useOneTap
-                theme="outline"
-                size="large"
-                shape="rectangular"
-                width="100%"
-              />
+            <div className="relative w-full max-w-xs flex justify-center group/google">
+              {/* Custom UI Button */}
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-3 py-3 px-6 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 shadow-md group-hover/google:shadow-lg transition-all duration-200"
+              >
+                <FcGoogle className="h-6 w-6" />
+                <span className="text-base font-medium text-zinc-700 dark:text-zinc-200">Continue with Google</span>
+              </button>
+              
+              {/* Invisible Google iframe overlay that handles the actual secure click */}
+              <div className="absolute inset-0 z-10 w-full overflow-hidden [&>div]:w-full [&>div]:h-full cursor-pointer" style={{ opacity: 0.01 }}>
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google Auth failed')}
+                  useOneTap
+                  theme="outline"
+                  size="large"
+                  text="continue_with"
+                />
+              </div>
             </div>
           </div>
 
-          <p className="text-center text-sm text-zinc-500">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-green-600 hover:text-green-500 transition-colors">
-              Create one now
-            </Link>
-          </p>
+          <div className="mt-8 text-center space-y-4">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-semibold text-green-600 hover:text-green-500 transition-colors">
+                Create one now
+              </Link>
+            </p>
+            <div className="flex justify-center">
+              <Link to="/" className="flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors group">
+                <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                Back to Main Page
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

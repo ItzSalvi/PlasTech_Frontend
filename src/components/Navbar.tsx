@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { Button } from './ui/button';
-import { LogOut, Moon, Sun, Leaf, Menu, X } from 'lucide-react';
+import { LogOut, Leaf, Menu, X } from 'lucide-react';
 import { Modal } from './ui/modal';
+import PlasTechLogo from '../assets/PlasTech_Logo.png';
 
 export function Navbar() {
   const { isAuthenticated, isAdmin, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const location = useLocation();
 
   const toggle = () => setOpen((v) => !v);
   const close = () => setOpen(false);
@@ -23,71 +25,52 @@ export function Navbar() {
     logout();
   };
 
+  const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
+    const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to + '/'));
+    return (
+      <Link to={to} onClick={close} className="w-full sm:w-auto">
+        <Button
+          variant={isActive ? 'secondary' : 'ghost'}
+          className={`w-full justify-start transition-all ${
+            isActive 
+              ? 'text-green-700 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-900/20' 
+              : 'text-zinc-600 dark:text-zinc-400 hover:text-green-600 dark:hover:text-green-400'
+          }`}
+        >
+          {children}
+        </Button>
+      </Link>
+    );
+  };
+
   const userLinks = (
     <>
-      <Link to="/dashboard" onClick={close}>
-        <Button variant="ghost" className="w-full sm:w-auto justify-start">
-          Dashboard
-        </Button>
-      </Link>
-      <Link to="/insert" onClick={close}>
-        <Button
-          variant="ghost"
-          className="w-full sm:w-auto justify-start text-green-600 dark:text-green-400"
-        >
-          Insert Bottles
-        </Button>
-      </Link>
-      <Link to="/redeem" onClick={close}>
-        <Button variant="ghost" className="w-full sm:w-auto justify-start">
-          Redeem
-        </Button>
-      </Link>
-      <Link to="/transactions" onClick={close}>
-        <Button variant="ghost" className="w-full sm:w-auto justify-start">
-          Transactions
-        </Button>
-      </Link>
-      <Link to="/history" onClick={close}>
-        <Button variant="ghost" className="w-full sm:w-auto justify-start">
-          History
-        </Button>
-      </Link>
+      <NavLink to="/dashboard">Dashboard</NavLink>
+      <NavLink to="/insert">Insert Bottles</NavLink>
+      <NavLink to="/redeem">Redeem</NavLink>
+      <NavLink to="/transactions">Transactions</NavLink>
+      <NavLink to="/history">History</NavLink>
     </>
   );
 
   const adminLinks = (
-    <Link to="/admin" onClick={close}>
-      <Button variant="outline" className="w-full sm:w-auto justify-start">
-        Admin Dashboard
-      </Button>
-    </Link>
+    <NavLink to="/admin">Admin Dashboard</NavLink>
   );
 
   return (
-    <nav className="border-b bg-background shadow-sm sticky top-0 z-40">
+    <nav className="bg-background shadow-md sticky top-0 z-40 transition-shadow duration-300">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-green-600">
-          <Leaf className="h-6 w-6" />
+        <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-green-600 hover:opacity-80 transition-opacity cursor-pointer">
+          <img src={PlasTechLogo} alt="PlasTech Logo" className="h-8 w-auto" />
           PlasTech
         </Link>
 
         {/* Desktop actions */}
         <div className="hidden sm:flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-
           {isAuthenticated ? (
             <>
               {isAdmin ? adminLinks : userLinks}
-              <Link to="/settings">
-                <Button variant="ghost">Settings</Button>
-              </Link>
+              <NavLink to="/settings">Settings</NavLink>
               <Button
                 variant="ghost"
                 size="icon"
@@ -100,10 +83,10 @@ export function Navbar() {
           ) : (
             <>
               <Link to="/login">
-                <Button variant="ghost">Login</Button>
+                <Button variant="ghost" className="cursor-pointer">Login</Button>
               </Link>
               <Link to="/register">
-                <Button>Sign Up</Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md">Sign Up</Button>
               </Link>
             </>
           )}
@@ -111,13 +94,6 @@ export function Navbar() {
 
         {/* Mobile actions */}
         <div className="flex sm:hidden items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -136,11 +112,7 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 {isAdmin ? adminLinks : userLinks}
-                <Link to="/settings" onClick={close}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Settings
-                  </Button>
-                </Link>
+                <NavLink to="/settings">Settings</NavLink>
                 <Button
                   variant="ghost"
                   className="w-full justify-start"
@@ -152,16 +124,8 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <Link to="/login" onClick={close}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/register" onClick={close}>
-                  <Button className="w-full justify-start">
-                    Sign Up
-                  </Button>
-                </Link>
+                <NavLink to="/login">Login</NavLink>
+                <NavLink to="/register">Sign Up</NavLink>
               </>
             )}
           </div>
